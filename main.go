@@ -24,13 +24,13 @@ func insertData(db *pgx.Conn) {
 	repo := repository.New(db)
 	t, _ := time.Parse("2006-01-02 15:04:05", "1993-12-10 00:00:00")
 
-	err := repo.InsertGame(context.Background(), repository.InsertGameParams{Name: "Doom", CreatedDate: pgtype.Timestamptz{Time: t, Valid: true}})
+	game, err := repo.InsertGame(context.Background(), repository.InsertGameParams{Name: "Doom", CreatedDate: pgtype.Timestamptz{Time: t, Valid: true}})
 
 	if err != nil {
 		log.Fatalf("Cannot insert game into db: %v", err)
 	}
 
-	fmt.Println("Inserted game")
+	fmt.Printf("Inserted game %s with id %s", game.Name, game.ID)
 }
 
 func main() {
