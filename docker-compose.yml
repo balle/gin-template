@@ -5,6 +5,7 @@ services:
     build: .
     ports:
       - "8000:8000"
+    # Of course this is only for testing on localhost
     environment:
       - DB_HOST=postgres
       - DB_USER=gin
@@ -17,15 +18,14 @@ services:
     networks:
       - app-network
 
-  # PostgreSQL Datenbank
   postgres:
     image: postgres:16-alpine
+    # Of course this is only for testing on localhost
     environment:
       POSTGRES_USER: gin
       POSTGRES_PASSWORD: tonic
       POSTGRES_DB: gin
     volumes:
-      # Persistiert die Daten auf deinem Host, damit sie beim Neustart erhalten bleiben
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
     networks:
