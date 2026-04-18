@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=gin
+      - DB_PASSWORD=tonic
+      - DB_NAME=gin
+      - GIN_MODE=release
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # PostgreSQL Datenbank
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: gin
+      POSTGRES_PASSWORD: tonic
+      POSTGRES_DB: gin
+    volumes:
+      # Persistiert die Daten auf deinem Host, damit sie beim Neustart erhalten bleiben
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
