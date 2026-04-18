@@ -20,10 +20,11 @@ import (
 // 	}
 // }
 
-func insertData(db *pgx.Conn) {
+func insertGames(db *pgx.Conn) {
 	repo := repository.New(db)
 	t, _ := time.Parse("2006-01-02 15:04:05", "1993-12-10 00:00:00")
 
+	// TODO: its not good to use postgres specific datatypes in the business logic
 	game, err := repo.InsertGame(context.Background(), repository.InsertGameParams{Name: "Doom", CreatedDate: pgtype.Timestamptz{Time: t, Valid: true}})
 
 	if err != nil {
@@ -48,7 +49,7 @@ func main() {
 	defer db.Close(context.Background())
 	log.Printf("Connected to database %s on %s.", dbName, dbHost)
 
-	//insertData()
+	//insertGames()
 
 	handler := gin.Default()
 
