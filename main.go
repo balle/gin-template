@@ -10,8 +10,8 @@ import (
 
 	"github.com/balle/gin-template/repository"
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/pgtype"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // func init() {
@@ -25,7 +25,7 @@ func insertGames(db *pgx.Conn) {
 	t, _ := time.Parse("2006-01-02 15:04:05", "1993-12-10 00:00:00")
 
 	// TODO: its not good to use postgres specific datatypes in the business logic
-	game, err := repo.InsertGame(context.Background(), repository.InsertGameParams{Name: "Doom", CreatedDate: pgtype.Timestamptz{Time: t, Valid: true}})
+	game, err := repo.InsertGame(context.Background(), repository.InsertGameParams{Name: "Doom", CreatedDate: pgtype.Timestamp{Time: t, Valid: true}})
 
 	if err != nil {
 		log.Fatalf("Cannot insert game into db: %v", err)
