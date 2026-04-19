@@ -5,12 +5,34 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/balle/gin-template/models"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
+
+func insertTestData(db *gorm.DB) {
+	t, _ := time.Parse("2006-01-02 15:04:05", "1993-12-10 00:00:00")
+
+	result := db.Create(&models.Game{
+		ID:          uuid.New(),
+		Name:        "Doom",
+		Played:      true,
+		Description: "Best game ever",
+		Rating:      100,
+		CreatedDate: time.Now(),
+		ReleaseDate: t,
+	})
+
+	if result.Error != nil {
+		log.Fatalf("Cannot insert test data: %v", result.Error)
+	}
+
+	log.Println("Inserted test data.")
+}
 
 func main() {
 	dbUser := os.Getenv("DB_USER")
@@ -29,6 +51,8 @@ func main() {
 
 	//defer db.Close()
 	log.Printf("Connected to database %s on %s.", dbName, dbHost)
+
+	//insertTestData(db)
 
 	handler := gin.Default()
 
