@@ -3,13 +3,12 @@ package models
 import (
 	"time"
 
-	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type Game struct {
-	ID           uuid.UUID `gorm:"type:uuid;primaryKey"`
-	Name         string    `gorm:"size:255;not null"`
-	CreatedDate  time.Time `gorm:"autoCreateTime"`
+	gorm.Model
+	Name         string `gorm:"size:255;not null"`
 	StartedDate  *time.Time
 	FinishedDate *time.Time
 	Played       bool   `gorm:"default:false"`
