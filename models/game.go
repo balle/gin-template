@@ -16,4 +16,5 @@ type Game struct {
 	DownloadOnly bool   `gorm:"default:false"`
 	Rating       int32
 	ReleaseDate  time.Time
+	Gamesystems  []Gamesystem `gorm:"many2many:game_gamesystems;"`
 }

@@ -16,16 +16,27 @@ import (
 func insertTestData(db *gorm.DB) {
 	t, _ := time.Parse("2006-01-02 15:04:05", "1993-12-10 00:00:00")
 
-	result := db.Create(&models.Game{
+	gamesystem := models.Gamesystem{
+		Name: "PC",
+	}
+	result := db.Create(&gamesystem)
+
+	if result.Error != nil {
+		log.Fatalf("Cannot insert gamesystem test data: %v", result.Error)
+	}
+
+	game := models.Game{
 		Name:        "Doom",
 		Played:      true,
 		Description: "Best game ever",
 		Rating:      100,
 		ReleaseDate: t,
-	})
+		Gamesystems: []models.Gamesystem{gamesystem},
+	}
+	result = db.Create(&game)
 
 	if result.Error != nil {
-		log.Fatalf("Cannot insert test data: %v", result.Error)
+		log.Fatalf("Cannot insert game test data: %v", result.Error)
 	}
 
 	log.Println("Inserted test data.")
@@ -41,15 +52,18 @@ func main() {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
-		log.Fatalf("failed to connect database")
+		log.Fatalf("Failed to connect database: %v", err)
 	}
 
-	db.AutoMigrate(&models.Game{})
+	err = db.AutoMigrate(&models.Gamesystem{}, &models.Game{})
 
-	//defer db.Close()
+	if err != nil {
+		log.Fatalf("Db migration failed: %v", err)
+	}
+
 	log.Printf("Connected to database %s on %s.", dbName, dbHost)
 
-	// insertTestData(db)
+	insertTestData(db)
 
 	handler := gin.Default()
 
