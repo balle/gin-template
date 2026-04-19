@@ -16,7 +16,7 @@ type Game struct {
 	StartedDate  pgtype.Timestamp
 	FinishedDate pgtype.Timestamp
 	Played       bool
-	Finished     bool
+	Finished     interface{}
 	Description  string
 	DownloadOnly bool
 	Rating       pgtype.Int4
