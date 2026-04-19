@@ -5,11 +5,12 @@
 package repository
 
 import (
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Game struct {
-	ID           pgtype.UUID
+	ID           uuid.UUID
 	Name         string
 	CreatedDate  pgtype.Timestamp
 	StartedDate  pgtype.Timestamp

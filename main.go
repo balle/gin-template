@@ -49,7 +49,7 @@ func main() {
 	defer db.Close(context.Background())
 	log.Printf("Connected to database %s on %s.", dbName, dbHost)
 
-	//insertGames()
+	// insertGames(db)
 
 	handler := gin.Default()
 
