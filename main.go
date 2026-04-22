@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -65,7 +66,15 @@ func main() {
 
 	insertTestData(db)
 
+	tmpl, err := template.ParseGlob("templates/game/*.html")
+
+	if err != nil {
+		log.Fatalf("Template errors:\n%v\n", err)
+	}
+
 	handler := gin.Default()
+	handler.Static("/images", "static/images")
+	handler.SetHTMLTemplate(tmpl)
 
 	handler.GET("/", func(ctx *gin.Context) {
 		var games []models.Game
@@ -76,8 +85,8 @@ func main() {
 				"message": "Could not fetch games",
 			})
 		} else {
-			ctx.JSON(http.StatusOK, gin.H{
-				"message": games,
+			ctx.HTML(http.StatusOK, "game/list.html", gin.H{
+				"Games": games,
 			})
 		}
 	})

@@ -1,0 +1,21 @@
+{{ define "game/list.html" }}
+<html>
+  <head>
+    <title>Gin Template</title>
+  </head>
+  <body>
+    <h1>Gin Template</h1>
+    <br />
+
+    <h2>My games</h2>
+    {{range .Games}}
+    <p>
+      <img src="images/Edit_icon.png" />
+      <img src="images/Trash_icon.png" />
+      {{.Name}}
+    </p>
+    {{end}}
+    <br /><br />
+  </body>
+</html>
+{{ end }}
