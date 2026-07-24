@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"html/template"
 	"log"
-	"net/http"
 	"os"
 	"time"
 
 	"github.com/balle/gin-template/models"
-	"github.com/gin-gonic/gin"
+	"github.com/balle/gin-template/routes"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -64,7 +63,7 @@ func main() {
 
 	log.Printf("Connected to database %s on %s.", dbName, dbHost)
 
-	insertTestData(db)
+	//insertTestData(db)
 
 	tmpl, err := template.ParseGlob("templates/game/*.html")
 
@@ -72,24 +71,7 @@ func main() {
 		log.Fatalf("Template errors:\n%v\n", err)
 	}
 
-	handler := gin.Default()
-	handler.Static("/images", "static/images")
-	handler.SetHTMLTemplate(tmpl)
-
-	handler.GET("/", func(ctx *gin.Context) {
-		var games []models.Game
-		result := db.Find(&games)
-
-		if result.Error != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Could not fetch games",
-			})
-		} else {
-			ctx.HTML(http.StatusOK, "game/list.html", gin.H{
-				"Games": games,
-			})
-		}
-	})
+	handler := routes.MountRoutes(db, tmpl)
 
 	handler.Run("0.0.0.0:8000")
 }
