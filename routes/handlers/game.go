@@ -1,14 +1,25 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/balle/gin-template/models"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
+
+func getGame(ctx *gin.Context, db *gorm.DB) (*models.Game, error) {
+	game := models.Game{}
+	result := db.Preload("Gamesystems").First(&game, "id = ?", ctx.Param("id"))
+
+	if result.Error != nil {
+		return nil, fmt.Errorf("Failed fetching game by id %d: %v", ctx.Param("id"), result.Error)
+	}
+
+	return &game, nil
+}
 
 func getAllGames(db *gorm.DB) ([]models.Game, error) {
 	var games []models.Game
@@ -55,8 +66,7 @@ func CreateGame(ctx *gin.Context, db *gorm.DB) {
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error":   "Validation error",
-			"details": err.Error(),
+			"error": "Validation error",
 		})
 		return
 	}
@@ -72,22 +82,11 @@ func CreateGame(ctx *gin.Context, db *gorm.DB) {
 }
 
 func GetGame(ctx *gin.Context, db *gorm.DB) {
-	game := models.Game{}
-	inputId := ctx.Param("id")
-	id, err := strconv.Atoi(inputId)
+	game, err := getGame(ctx, db)
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid id",
-		})
-		return
-	}
-
-	result := db.Preload("Gamesystems").First(&game, id)
-	if result.Error != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
-			"error":   "Game not found",
-			"details": result.Error.Error(),
+			"error": "Game not found",
 		})
 		return
 	}
@@ -96,17 +95,6 @@ func GetGame(ctx *gin.Context, db *gorm.DB) {
 }
 
 func UpdateGame(ctx *gin.Context, db *gorm.DB) {
-	game := models.Game{}
-	inputId := ctx.Param("id")
-	id, err := strconv.Atoi(inputId)
-
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid id",
-		})
-		return
-	}
-
 	input := models.GameInput{}
 
 	if err := ctx.ShouldBindJSON(&input); err != nil {
@@ -117,68 +105,62 @@ func UpdateGame(ctx *gin.Context, db *gorm.DB) {
 		return
 	}
 
-	result := db.Preload("Gamesystems").First(&game, id)
-	if result.Error != nil {
+	game, err := getGame(ctx, db)
+
+	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
-			"error":   "Game not found",
-			"details": result.Error.Error(),
+			"error": "Cannot find game",
 		})
 		return
 	}
 
-	game.Name = input.Name
-	game.StartedDate = input.StartedDate
-	game.FinishedDate = input.FinishedDate
-	game.Played = input.Played
-	game.Description = input.Description
-	game.DownloadOnly = input.DownloadOnly
-	game.Rating = input.Rating
-	game.ReleaseDate = input.ReleaseDate
+	err = db.Transaction(func(tx *gorm.DB) error {
+		game.Name = input.Name
+		game.StartedDate = input.StartedDate
+		game.FinishedDate = input.FinishedDate
+		game.Played = input.Played
+		game.Description = input.Description
+		game.DownloadOnly = input.DownloadOnly
+		game.Rating = input.Rating
+		game.ReleaseDate = input.ReleaseDate
 
-	var systems []models.Gamesystem
-	if len(input.GamesystemIDs) > 0 {
-		if err := db.Find(&systems, input.GamesystemIDs).Error; err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{
-				"error":   "Invalid gamesystem IDs",
-				"details": err.Error(),
-			})
-			return
+		var systems []models.Gamesystem
+
+		if len(input.GamesystemIDs) > 0 {
+			if err := tx.Find(&systems, input.GamesystemIDs).Error; err != nil {
+				return errors.New("Invalid gamesystem IDs")
+			}
 		}
-	}
 
-	if err := db.Save(&game).Error; err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Could not update game", "details": err.Error()})
-		return
-	}
+		if err := tx.Save(game).Error; err != nil {
+			return errors.New("Could not update game")
+		}
 
-	if err := db.Model(&game).Association("Gamesystems").Replace(systems); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Could not update gamesystems", "details": err.Error()})
-		return
-	}
+		if err := tx.Model(game).Association("Gamesystems").Replace(systems); err != nil {
+			return errors.New("Could not update gamesystems")
+		}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"msg":  "Updated successfully",
-		"game": game,
+		return nil
 	})
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Could not update game",
+		})
+	} else {
+		ctx.JSON(http.StatusOK, gin.H{
+			"msg":  "Updated successfully",
+			"game": game,
+		})
+	}
 }
 
 func DeleteGame(ctx *gin.Context, db *gorm.DB) {
-	game := models.Game{}
-	inputId := ctx.Param("id")
-	id, err := strconv.Atoi(inputId)
+	game, err := getGame(ctx, db)
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid id",
-		})
-		return
-	}
-
-	result := db.Preload("Gamesystems").First(&game, id)
-	if result.Error != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
-			"error":   "Game not found",
-			"details": result.Error.Error(),
+			"error": "Could not find game",
 		})
 		return
 	}
