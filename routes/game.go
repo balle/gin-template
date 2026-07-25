@@ -4,7 +4,7 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/balle/gin-template/routes/handlers"
+	"github.com/balle/gin-template/handlers"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
