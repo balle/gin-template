@@ -1,12 +1,14 @@
-FROM golang:1.25-alpine
-
-RUN apk update
-RUN apk upgrade
-
-RUN mkdir /code
-COPY . /code/
+# Build
+FROM golang:1.25-alpine AS builder
 WORKDIR /code
+COPY . .
+RUN go build -o app main.go
 
-ENTRYPOINT [ "go", "run", "main.go" ] 
+# Run
+FROM alpine:latest
+WORKDIR /app
+COPY --from=builder /code/app .
+COPY --from=builder /code/templates ./templates
 
-EXPOSE 8000/tcp
+EXPOSE 8000
+CMD ["./app"]
