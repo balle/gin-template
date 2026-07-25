@@ -5,28 +5,32 @@ services:
     build: .
     ports:
       - "8000:8000"
-    # Of course this is only for testing on localhost
     environment:
       - DB_HOST=postgres
       - DB_USER=gin
-      - DB_PASSWORD=tonic
+      - DB_PASS=tonic
       - DB_NAME=gin
       - GIN_MODE=release
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - app-network
 
   postgres:
     image: postgres:16-alpine
-    # Of course this is only for testing on localhost
     environment:
-      POSTGRES_USER: gin
-      POSTGRES_PASSWORD: tonic
-      POSTGRES_DB: gin
+      - POSTGRES_USER=gin
+      - POSTGRES_PASSWORD=tonic
+      - POSTGRES_DB=gin
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gin -d gin"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
     restart: unless-stopped
     networks:
       - app-network

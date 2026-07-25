@@ -2,7 +2,6 @@ FROM golang:1.25-alpine
 
 RUN apk update
 RUN apk upgrade
-RUN apk add git
 
 RUN mkdir /code
 COPY . /code/
