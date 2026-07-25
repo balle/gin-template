@@ -4,13 +4,19 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"net/http"
 	"os"
 	"time"
 
 	"github.com/balle/gin-template/models"
 	"github.com/balle/gin-template/routes"
+	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+
+	_ "github.com/balle/gin-template/docs"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func insertTestData(db *gorm.DB) {
@@ -72,6 +78,10 @@ func main() {
 	}
 
 	handler := routes.MountRoutes(db, tmpl)
+	handler.GET("/swagger", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
+	})
+	handler.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	handler.Run("0.0.0.0:8000")
 }

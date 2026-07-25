@@ -10,6 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// Internal function to get a game by its id
 func getGame(ctx *gin.Context, db *gorm.DB) (*models.Game, error) {
 	game := models.Game{}
 	result := db.Preload("Gamesystems").First(&game, "id = ?", ctx.Param("id"))
@@ -21,6 +22,7 @@ func getGame(ctx *gin.Context, db *gorm.DB) (*models.Game, error) {
 	return &game, nil
 }
 
+// Internal function to get a list of all games
 func getAllGames(db *gorm.DB) ([]models.Game, error) {
 	var games []models.Game
 	result := db.Find(&games)
@@ -32,6 +34,17 @@ func getAllGames(db *gorm.DB) ([]models.Game, error) {
 	}
 }
 
+// ListAllGames godoc
+// @Summary      Get a list of all games
+// @Description  Get a list of all games
+// @Tags         games
+// @Accept       json
+// @Produce      json
+// @Success      200   {object}  map[string]interface{}
+// @Failure      400   {object}  map[string]interface{}
+// @Failure      404   {object}  map[string]interface{}
+// @Failure      500   {object}  map[string]interface{}
+// @Router       /games [get]
 func ListAllGames(ctx *gin.Context, db *gorm.DB) {
 	games, err := getAllGames(db)
 
@@ -46,6 +59,7 @@ func ListAllGames(ctx *gin.Context, db *gorm.DB) {
 	}
 }
 
+// Return all games in the html list template
 func ViewAllGames(ctx *gin.Context, db *gorm.DB) {
 	games, err := getAllGames(db)
 
@@ -60,6 +74,18 @@ func ViewAllGames(ctx *gin.Context, db *gorm.DB) {
 	}
 }
 
+// CreateGame godoc
+// @Summary      Create a new game
+// @Description  Create a new game with given game data
+// @Tags         games
+// @Accept       json
+// @Produce      json
+// @Param        game  body      models.GameInput true  "Game data"
+// @Success      200   {object}  map[string]interface{}
+// @Failure      400   {object}  map[string]interface{}
+// @Failure      404   {object}  map[string]interface{}
+// @Failure      500   {object}  map[string]interface{}
+// @Router       /games/ [post]
 func CreateGame(ctx *gin.Context, db *gorm.DB) {
 	input := models.GameInput{}
 	err := ctx.ShouldBindJSON(&input)
@@ -81,6 +107,18 @@ func CreateGame(ctx *gin.Context, db *gorm.DB) {
 	ctx.JSON(http.StatusOK, gin.H{"error": false, "msg": input.Game})
 }
 
+// GetGame godoc
+// @Summary      Get a single game
+// @Description  Fetch a single game by its id
+// @Tags         games
+// @Accept       json
+// @Produce      json
+// @Param        id    path      int              true  "Game ID"
+// @Success      200   {object}  map[string]interface{}
+// @Failure      400   {object}  map[string]interface{}
+// @Failure      404   {object}  map[string]interface{}
+// @Failure      500   {object}  map[string]interface{}
+// @Router       /games/{id} [get]
 func GetGame(ctx *gin.Context, db *gorm.DB) {
 	game, err := getGame(ctx, db)
 
@@ -94,6 +132,19 @@ func GetGame(ctx *gin.Context, db *gorm.DB) {
 	ctx.JSON(http.StatusOK, gin.H{"error": false, "game": game})
 }
 
+// UpdateGame godoc
+// @Summary      Update a game
+// @Description  Updates an existing game and its gamesystems
+// @Tags         games
+// @Accept       json
+// @Produce      json
+// @Param        id    path      int              true  "Game ID"
+// @Param        game  body      models.GameInput true  "Update data"
+// @Success      200   {object}  map[string]interface{}
+// @Failure      400   {object}  map[string]interface{}
+// @Failure      404   {object}  map[string]interface{}
+// @Failure      500   {object}  map[string]interface{}
+// @Router       /games/{id} [patch]
 func UpdateGame(ctx *gin.Context, db *gorm.DB) {
 	input := models.GameInput{}
 
@@ -155,6 +206,18 @@ func UpdateGame(ctx *gin.Context, db *gorm.DB) {
 	}
 }
 
+// DeleteGame godoc
+// @Summary      Delete a game
+// @Description  Delete a game
+// @Tags         games
+// @Accept       json
+// @Produce      json
+// @Param        id    path      int              true  "Game ID"
+// @Success      200   {object}  map[string]interface{}
+// @Failure      400   {object}  map[string]interface{}
+// @Failure      404   {object}  map[string]interface{}
+// @Failure      500   {object}  map[string]interface{}
+// @Router       /games/{id} [delete]
 func DeleteGame(ctx *gin.Context, db *gorm.DB) {
 	game, err := getGame(ctx, db)
 

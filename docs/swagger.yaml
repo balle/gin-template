@@ -1,0 +1,237 @@
+definitions:
+  models.GameInput:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      download_only:
+        type: boolean
+      finished_date:
+        type: string
+      gamesystem_ids:
+        items:
+          type: integer
+        type: array
+      gamesystems:
+        items:
+          $ref: '#/definitions/models.Gamesystem'
+        type: array
+      id:
+        type: integer
+      name:
+        maxLength: 255
+        type: string
+      played:
+        type: boolean
+      rating:
+        type: integer
+      release_date:
+        type: string
+      started_date:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - gamesystem_ids
+    - name
+    type: object
+  models.Gamesystem:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /games:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of all games
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get a list of all games
+      tags:
+      - games
+  /games/:
+    post:
+      consumes:
+      - application/json
+      description: Fetch a single game by its id
+      parameters:
+      - description: Game data
+        in: body
+        name: game
+        required: true
+        schema:
+          $ref: '#/definitions/models.GameInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get a single game
+      tags:
+      - games
+  /games/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a game
+      parameters:
+      - description: Game ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete a game
+      tags:
+      - games
+    get:
+      consumes:
+      - application/json
+      description: Fetch a single game by its id
+      parameters:
+      - description: Game ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get a single game
+      tags:
+      - games
+    patch:
+      consumes:
+      - application/json
+      description: Updates an existing game and its gamesystems
+      parameters:
+      - description: Game ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update data
+        in: body
+        name: game
+        required: true
+        schema:
+          $ref: '#/definitions/models.GameInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update a game
+      tags:
+      - games
+swagger: "2.0"
