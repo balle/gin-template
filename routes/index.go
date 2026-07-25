@@ -31,6 +31,10 @@ func MountRoutes(db *gorm.DB, tmpl *template.Template) *gin.Engine {
 		handlers.CreateGame(ctx, db)
 	})
 
+	handler.PUT("/games/:id", func(ctx *gin.Context) {
+		handlers.UpdateGame(ctx, db)
+	})
+
 	handler.PATCH("/games/:id", func(ctx *gin.Context) {
 		handlers.UpdateGame(ctx, db)
 	})
