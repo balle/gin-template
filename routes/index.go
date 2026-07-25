@@ -23,6 +23,10 @@ func MountRoutes(db *gorm.DB, tmpl *template.Template) *gin.Engine {
 		handlers.ListAllGames(ctx, db)
 	})
 
+	handler.GET("/games/search", func(ctx *gin.Context) {
+		handlers.SearchGames(ctx, db)
+	})
+
 	handler.GET("/games/:id", func(ctx *gin.Context) {
 		handlers.GetGame(ctx, db)
 	})

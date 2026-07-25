@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/balle/gin-template/models"
 	"github.com/gin-gonic/gin"
@@ -47,6 +48,34 @@ func getAllGames(db *gorm.DB) ([]models.Game, error) {
 // @Router       /games [get]
 func ListAllGames(ctx *gin.Context, db *gorm.DB) {
 	games, err := getAllGames(db)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Could not fetch games",
+		})
+	} else {
+		ctx.JSON(http.StatusOK, gin.H{
+			"games": games,
+		})
+	}
+}
+
+// SearchGames godoc
+// @Summary      Search games by name
+// @Description  Search games by name
+// @Tags         games
+// @Accept       json
+// @Produce      json
+// @Param        query  name    string  true  "name to search for"  example(doom)
+// @Success      200   {object}  map[string]interface{}
+// @Failure      400   {object}  map[string]interface{}
+// @Failure      404   {object}  map[string]interface{}
+// @Failure      500   {object}  map[string]interface{}
+// @Router       /games/search [get]
+func SearchGames(ctx *gin.Context, db *gorm.DB) {
+	var games []models.Game
+	searchTerm := "%" + strings.ToLower(ctx.Query("name")) + "%"
+	err := db.Where("LOWER(name) LIKE ?", searchTerm).Find(&games).Error
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
