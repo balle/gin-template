@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -9,11 +10,35 @@ import (
 	"gorm.io/gorm"
 )
 
-func ViewAllGames(ctx *gin.Context, db *gorm.DB) {
+func getAllGames(db *gorm.DB) ([]models.Game, error) {
 	var games []models.Game
 	result := db.Find(&games)
 
 	if result.Error != nil {
+		return nil, fmt.Errorf("Could not fetch games: %w", result.Error)
+	} else {
+		return games, nil
+	}
+}
+
+func ListAllGames(ctx *gin.Context, db *gorm.DB) {
+	games, err := getAllGames(db)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Could not fetch games",
+		})
+	} else {
+		ctx.JSON(http.StatusOK, gin.H{
+			"games": games,
+		})
+	}
+}
+
+func ViewAllGames(ctx *gin.Context, db *gorm.DB) {
+	games, err := getAllGames(db)
+
+	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Could not fetch games",
 		})
@@ -44,6 +69,30 @@ func CreateGame(ctx *gin.Context, db *gorm.DB) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"error": false, "msg": input.Game})
+}
+
+func GetGame(ctx *gin.Context, db *gorm.DB) {
+	game := models.Game{}
+	inputId := ctx.Param("id")
+	id, err := strconv.Atoi(inputId)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid id",
+		})
+		return
+	}
+
+	result := db.Preload("Gamesystems").First(&game, id)
+	if result.Error != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"error":   "Game not found",
+			"details": result.Error.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"error": false, "game": game})
 }
 
 func UpdateGame(ctx *gin.Context, db *gorm.DB) {
