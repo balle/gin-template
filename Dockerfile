@@ -2,7 +2,7 @@
 FROM golang:1.25-alpine AS builder
 WORKDIR /code
 COPY . .
-RUN go build -o app main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o app .
 
 # Run
 FROM alpine:latest
