@@ -45,6 +45,17 @@ func insertTestData(db *gorm.DB) {
 		log.Fatalf("Cannot insert game test data: %v", result.Error)
 	}
 
+	user := models.User{
+		Username: "gin",
+		Password: "tonic",
+	}
+
+	result = db.Create(&user)
+
+	if result.Error != nil {
+		log.Fatalf("Cannot insert user test data: %v", result.Error)
+	}
+
 	log.Println("Inserted test data.")
 }
 
@@ -61,7 +72,7 @@ func main() {
 		log.Fatalf("Failed to connect database: %v", err)
 	}
 
-	err = db.AutoMigrate(&models.Gamesystem{}, &models.Game{})
+	err = db.AutoMigrate(&models.Gamesystem{}, &models.Game{}, &models.User{})
 
 	if err != nil {
 		log.Fatalf("Db migration failed: %v", err)
@@ -69,7 +80,7 @@ func main() {
 
 	log.Printf("Connected to database %s on %s.", dbName, dbHost)
 
-	//insertTestData(db)
+	// insertTestData(db)
 
 	tmpl, err := template.ParseGlob("templates/game/*.html")
 
@@ -77,7 +88,9 @@ func main() {
 		log.Fatalf("Template errors:\n%v\n", err)
 	}
 
-	handler := routes.MountRoutes(db, tmpl)
+	handler := gin.Default()
+	handler = routes.MountLoginRoutes(handler, db, tmpl)
+	handler = routes.MountGamesRoutes(handler, db, tmpl)
 	handler.GET("/swagger", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
 	})
